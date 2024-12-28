@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
+import ReactMarkdown from "react-markdown"; // Import react-markdown
+import remarkGfm from 'remark-gfm';
 import './App.css'; // This file will contain our custom styles
+import { DefaultAIAnimation, BrainAnimation } from "./LottieAnimation";
 
 function App() {
   const [question, setQuestion] = useState("");
@@ -13,7 +16,7 @@ function App() {
   };
 
   const handleModelChange = (event) => {
-    console.log('Model Setting - ' + event.target.value)
+    console.log('Model Setting - ' + event.target.value);
     setModel(event.target.value);
   };
 
@@ -39,43 +42,51 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Document: AI driven Test Case Generation</h1>
-      <form onSubmit={handleSubmit} className="form-container">
-        <div className="input-container">
-          <label htmlFor="question">Enter your question:</label>
-          <textarea
-            id="question"
-            value={question}
-            onChange={handleQuestionChange}
-            placeholder="Ask a question..."
-          />
-        </div>
-        <div className="input-container">
-          <label htmlFor="model">Select LLM Model:</label>
-          <select id="model" value={model} onChange={handleModelChange}>
-            <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
-            <option value="llama3-8b-8192">llama3-8b-8192</option>
-            <option value="gemma2-9b-it">gemma2-9b-it</option>
-            {/* Add more models here if necessary */}
-          </select>
-        </div>
-        <button type="submit" className="submit-button">
-          {loading ? "Loading..." : "Submit"}
-        </button>
-      </form>
+      <h2>Ask me from - Salesforce Developer Limits and Allocations Quick Reference</h2>
+      <div className="main-container">
+        {/* Left Container: Form */}
+        <form onSubmit={handleSubmit} className="form-container">
+          <div className="input-container">
+            <label htmlFor="question">Please Enter your question:</label>
+            <textarea
+              id="question"
+              value={question}
+              onChange={handleQuestionChange}
+              placeholder="Ask a question..."
+            />
+          </div>
+          <div className="input-container">
+            <label htmlFor="model">Select LLM Model:</label>
+            <select id="model" value={model} onChange={handleModelChange}>
+              <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
+              <option value="llama3-8b-8192">llama3-8b-8192</option>
+              <option value="gemma2-9b-it">gemma2-9b-it</option>
+            </select>
+          </div>
+          <button type="submit" className="submit-button">
+            {loading ? "Loading..." : "Submit"}
+          </button>
+          {/* Brain Animation under Submit Button */}
+          <div className="brain-animation-container">
+            <BrainAnimation />
+          </div>
+        </form>
 
-      {response && (
-        <div className="response-container">
-          <h2>Response:</h2>
-          {response.error ? (
-            <p className="error">{response.error}</p>
-          ) : (
-            <p>{response.data.content}</p> // Assuming your response includes an 'answer' field
-          )}
-        </div>
-      )}
+        {/* Right Container: Response */}
+        {!response && <DefaultAIAnimation />}
+        {response && (
+          <div className="response-container">
+            {response.error ? (
+              <p className="error">{response.error}</p>
+            ) : (
+              <div className="markdown-container">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{response.data.content}</ReactMarkdown>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-
 export default App;

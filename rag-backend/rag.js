@@ -89,20 +89,35 @@ export const vectorSearchSingleStore = async (question) => {
 
 export const generatePrompt = async (searches,question) =>
 {
-    let context = "";
-    searches.forEach((search) => {
-        context = context + "\n\n" + search.pageContent;
+	let separater = "\n-----------------------------------------------\n";
+    let context = separater;
+    
+	searches.forEach((search) => {
+        context = context + search.pageContent + separater;
     });
-
+	
     const prompt = PromptTemplate.fromTemplate(`
-Answer the question based only on the following context:
+You are tasked with answering questions based on the provided document. Please read and understand the context carefully before generating your response.
 
+Context:
 {context}
 
----
+Instructions:
+1. The answer must only be derived from the provided context. Do not include any external knowledge, and avoid making assumptions beyond what is provided in the context.
+2. You must provide a detailed, step-by-step explanation where applicable, breaking down the information in a clear and structured manner.
+3. If the question pertains to specific concepts or processes, provide examples or additional clarification to ensure the user fully understands the topic.
+4. The question pertains to the document titled: "Salesforce Governor Limits Documentation." Ensure your response is rooted entirely in the provided document.
+5. Always explain complex technical terms or concepts in simple language that is easy for users to grasp, without oversimplifying.
+6. Most Important - Always Return Response in MARKDOWN FORMAT as out frontends are designed for Markdown rendering.
+7. We are using reach-markdown to render response to UI. So make sure to send resposne in PURE Markdown compatible with react-markdown library to avoid rendering issues.
 
-Answer the question based on the above context: {question}
+${separater}
+
+Question: {question}
+
+Please provide a detailed, well-explained, and well-supported answer based solely on the information available in the context. Break down your answer into clear points, and ensure that the response is comprehensive and easy to understand.
 `);
+
 
     const formattedPrompt = await prompt.format({
         context: context,
@@ -110,6 +125,7 @@ Answer the question based on the above context: {question}
     });
     return formattedPrompt;
 }
+
 
 
 export const generateOutput = async (prompt,model) =>
