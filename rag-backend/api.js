@@ -7,6 +7,7 @@ import {
   generatePrompt,
   vectorSearchChroma,
   vectorSearchFaiss,
+  vectorSearchSingleStore,
 } from "./rag.js";
 
 const PORT = 3005;
@@ -38,7 +39,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   const question = req.body.question;
   const model = req.body.model;
   
-  const searches = await vectorSearchFaiss(question);
+  const searches = await vectorSearchSingleStore(question);
   
   const prompt = await generatePrompt(searches, question);
   console.log(prompt);

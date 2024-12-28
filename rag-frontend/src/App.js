@@ -54,7 +54,7 @@ function App() {
           <label htmlFor="model">Select LLM Model:</label>
           <select id="model" value={model} onChange={handleModelChange}>
             <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
-            <option value="llama3-8b-8192t">llama3-8b-8192</option>
+            <option value="llama3-8b-8192">llama3-8b-8192</option>
             <option value="gemma2-9b-it">gemma2-9b-it</option>
             {/* Add more models here if necessary */}
           </select>
