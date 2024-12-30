@@ -1,90 +1,195 @@
+/* Login Container */
+.login-container {
+  display: flex;
+  flex-direction: column;  /* Stack the children vertically */
+  justify-content: center;
+  align-items: center;  /* Center the login form */
+  height: 100vh;  /* Ensure it takes up the full viewport height */
+  background-color: white;  /* Grey background #f2f2f2 */
+  padding: 50px;
+  border-bottom: 1px solid #ddd;
+  box-sizing: border-box;
+}
+
+/* Login Form */
+.login-form {
+  display: flex;
+  flex-direction: column;  /* Stack form fields vertically */
+  align-items: left;  /* Center the form fields */
+  justify-content: right;
+  width: 100%;
+  max-width: 400px;  /* Set a max-width to prevent it from stretching too much */
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Admin Access Request */
+.admin-access {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+  text-align: center;  /* Center the text horizontally */
+  width: inherit;  /* Ensure it takes up full width for proper alignment */
+}
+
+/* App Container */
 .App {
   font-family: Arial, sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 20px;
+  margin: 5px;
+  padding: 5px;
 }
 
-.main-container {
+/* Header Container */
+.header-container {
   display: flex;
-  justify-content: space-between; /* Ensure form is on left and response is on right */
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
-  max-width: 1200px; /* Control the overall width */
-}
-
-.form-container {
-  display: flex;
-  flex-direction: column; /* Keep form items stacked vertically */
-  gap: 10px;
-  width: 40%; /* Ensure it takes up only 45% of the space */
-}
-
-.input-container {
-  display: flex;
-  flex-direction: column;
-}
-
-textarea, select, button {
   padding: 10px;
-  margin-top: 5px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  width: 100%;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  box-sizing: border-box;
 }
 
-.submit-button {
-  background-color: #4CAF50;
+/* Header Title */
+.header-container h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Logout Button */
+.logout-button {
+  padding: 8px 16px;
+  background-color: #dc3545;
   color: white;
   border: none;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.3s;
 }
 
-.submit-button:hover {
-  background-color: #45a049;
+.logout-button:hover {
+  background-color: #b02a37;
 }
 
-.response-container {
+/* Main Container */
+.main-container {
   display: flex;
-  flex-direction: column;
-  width: 50%; /* Take up 45% of the space on the right */
-  padding: 10px;
+  width: auto;
+  padding: 10px; /* Reduced padding for better utilization of space */
+  box-sizing: border-box;
+  margin-top: 20px; /* Some space below header */
+  gap: 20px; /* Ensures there is space between form and response */
+}
+
+/* Form Container */
+.form-container {
+  width: 45%; /* 40% width for form */
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+/* Response Container */
+.response-container {
+  width: 55%; /* 60% width for response */
+  padding: 5px;
+  box-sizing: border-box;
   background-color: #f9f9f9;
   border-radius: 5px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Error Message */
 .error {
   color: red;
   font-weight: bold;
 }
 
-.lottie-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 60%; /* Reduced the width of the animation */
-  height: auto;
+/* Input Fields */
+.input-container {
+  margin-bottom: 10px;
 }
 
+.input-container label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+textarea,
+select,
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Ensure proper sizing inside the input */
+}
+
+/* Buttons */
+.submit-button {
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+  background-color: #0056b3;
+}
+
+/* Reset Button */
+.reset-button {
+  padding: 10px;
+  background-color: #f0ad4e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  margin-left: 10px; /* To space it from the submit button */
+  transition: background-color 0.3s;
+}
+
+.reset-button:hover {
+  background-color: #ec971f;
+}
+
+
+/* Lottie Animation Container */
 .brain-animation-container {
-  margin-top: 5px;
+  margin-top: 10px;
   display: flex;
   justify-content: center;
 }
+.lottie-container{
+  background-color: inherit;
+}
 
+/* Mobile Responsiveness */
 @media (max-width: 768px) {
   .main-container {
-    flex-direction: column; /* Stack sections vertically on smaller screens */
-    width: 100%;
+    flex-direction: column;
+    padding: 0;
   }
 
-  .form-container, .response-container {
+  .form-container,
+  .response-container {
     width: 100%;
-  }
-
-  .lottie-container {
-    width: 100%; /* Ensure it takes full width on small screens */
+    margin-bottom: 20px; /* Space between form and response container */
   }
 }
