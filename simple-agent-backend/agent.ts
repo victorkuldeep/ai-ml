@@ -76,7 +76,7 @@ export async function callAgent(client: MongoClient, query: string, thread_id: s
     temperature: 0,
   }).bindTools(tools);
   */
-  const model = new ChatGroq({
+  const model1 = new ChatGroq({
         model : "llama-3.1-8b-instant", // Default value or llama3.1
         temperature : 0.5,
         maxTokens : undefined,
@@ -88,7 +88,7 @@ export async function callAgent(client: MongoClient, query: string, thread_id: s
         model: "llama3.2", // Default value or llama3.1
     }).bindTools(tools);
   
-  const model_X = new ChatOpenAI({
+  const model = new ChatOpenAI({
         model: "gpt-4o-mini", // Default value or llama3.1
         temperature: 0,
     }).bindTools(tools);

@@ -2,9 +2,12 @@ import 'dotenv/config';
 import express, { Express, Request, Response } from "express";
 import { MongoClient } from "mongodb";
 import { callAgent } from './agent';
+import cors from "cors";
 
 const app: Express = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 // Initialize MongoDB client
 const client = new MongoClient(process.env.MONGODB_ATLAS_URI as string);
