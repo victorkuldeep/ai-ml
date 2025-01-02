@@ -11,6 +11,7 @@ import {
   generateOutputStream,
   generatePrompt,
   vectorSearchSingleStore,
+  loadAndSplitTheDocs,
 } from "./rag.js";
 import path from "path";  // Import path to resolve file paths
 import fs from "fs";
@@ -80,7 +81,7 @@ app.post("/uploadfile", upload.single("file"), async (req, res) => {
           pageContent: doc.pageContent,
           metadata: doc.metadata,
       })));
-      const vectorStoreInit = new SingleStoreVectorStore(embeddings, ssConfig);
+      const vectorStoreInit = new SingleStoreVectorStore(nomicEmbeddings, ssConfig);
       // Clear the table before adding new data
       try {
           await vectorStoreInit.connectionPool.query(`TRUNCATE TABLE ${ssConfig.tableName}`);
@@ -98,7 +99,7 @@ app.post("/uploadfile", upload.single("file"), async (req, res) => {
       const ids = embeddedDocs.map((doc) => doc.id);
       const vectorStore = await SingleStoreVectorStore.fromDocuments(
         documents,//Documents
-        embeddings_local, // Embedding model -> Use any Embeddign model here OPEN AI , NOMIC LOCAL or NOMIC ATLAS
+        nomicEmbeddings, // Embedding model -> Use any Embeddign model here OPEN AI , NOMIC LOCAL or NOMIC ATLAS
         ssConfig, // Database config
       );
     // End the vector store connection

@@ -80,12 +80,6 @@ Please provide a detailed, well-explained, and well-supported answer based solel
 
 export const generateOutputStream = async (prompt, model) => {
     
-    const ollamaLlm = new ChatOllama({
-        baseUrl: "http://localhost:11434", // Default value
-        model: "llama3.2", // Default value or llama3.1
-        streaming: true, // Enable streaming
-    });
-    
     const llm = new ChatGroq({
         model: model ?? "llama-3.1-8b-instant",
         temperature: 0.5,
