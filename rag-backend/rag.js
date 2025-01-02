@@ -8,6 +8,8 @@ import { FaissStore } from "@langchain/community/vectorstores/faiss";
 import { ChatGroq } from "@langchain/groq"
 import "dotenv/config"
 import fs from "fs"; // Replace require with import
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { StringOutputParser } from "@langchain/core/output_parsers";
 
 export const vectorSearchChroma = async (question) => {
     
@@ -66,6 +68,7 @@ export const vectorSearchSingleStore = async (question) => {
     
     // SingleStore configuration
     const ssConfig = {
+        tableName:"DocumentVectorStore",
         connectionOptions: {
             host: process.env.SINGLESTORE_HOST,
             port: Number(process.env.SINGLESTORE_PORT),
@@ -97,7 +100,7 @@ export const generatePrompt = async (searches,question) =>
     });
 	
     const prompt = PromptTemplate.fromTemplate(`
-You are tasked with answering questions based on the provided document. Please read and understand the context carefully before generating your response.
+You are a helpful AI Assistant tasked with answering questions based on the provided document. Please read and understand the context carefully before generating your response.
 
 Context:
 {context}
@@ -106,16 +109,15 @@ Instructions:
 1. The answer must only be derived from the provided context. Do not include any external knowledge, and avoid making assumptions beyond what is provided in the context.
 2. You must provide a detailed, step-by-step explanation where applicable, breaking down the information in a clear and structured manner.
 3. If the question pertains to specific concepts or processes, provide examples or additional clarification to ensure the user fully understands the topic.
-4. The question pertains to the document titled: "Salesforce Governor Limits Documentation." Ensure your response is rooted entirely in the provided document.
+4. The question pertains from context shared from knowledgebase. Ensure your response is rooted entirely in the provided document context.
 5. Always explain complex technical terms or concepts in simple language that is easy for users to grasp, without oversimplifying.
-6. Most Important - Always Return Response in MARKDOWN FORMAT as out frontends are designed for Markdown rendering.
-7. We are using reach-markdown to render response to UI. So make sure to send resposne in PURE Markdown compatible with react-markdown library to avoid rendering issues.
+6. Most Important - Always Return Response in MARKDOWN FORMAT.
 
 ${separater}
 
 Question: {question}
 
-Please provide a detailed, well-explained, and well-supported answer based solely on the information available in the context. Break down your answer into clear points, and ensure that the response is comprehensive and easy to understand.
+Please provide a detailed, well-explained, and well-supported answer based solely on the information available in the context. Break down your answer into clear points, and ensure that the response is comprehensive and easy to understand. If User Query cannot be answered from context provided, ask user to provide additioanl details in question.
 `);
 
 
@@ -126,37 +128,37 @@ Please provide a detailed, well-explained, and well-supported answer based solel
     return formattedPrompt;
 }
 
-
-
-export const generateOutput = async (prompt,model) =>
-{   
-    console.log(`Model Received ---> ${model}`)
-    console.log(`LLM model used ->  ${model??"llama-3.1-8b-instant"}` )
+export const generateOutputStream = async (prompt, model) => {
     
     const ollamaLlm = new ChatOllama({
         baseUrl: "http://localhost:11434", // Default value
-        model: model??"llama3.1", // Default value or llama3.1
+        model: "llama3.2", // Default value or llama3.1
+        streaming: true, // Enable streaming
     });
     
     const llm = new ChatGroq({
-        model : model??"llama-3.1-8b-instant", // Default value or llama3.1
-        temperature : 0.5,
-        maxTokens : undefined,
-        maxRetries: 2
+        model: model ?? "llama-3.1-8b-instant",
+        temperature: 0.5,
+        maxTokens: undefined,
+        maxRetries: 2,
+        streaming: true, // Enable streaming
     });
 
-    //const response = await ollamaLlm.invoke(prompt);
-    const aiResponse = await llm.invoke([
-        {
-            role: "system",
-            content: "Act like a Computer Science Expert and help in answering user queries from context provided along with User Query."
-        },{
-            role: "user",
-            content: prompt
-        }
-    ])
-    console.log('aiResponse --->>>>>> ' + aiResponse);
-    return aiResponse;
-}
+    // Create a chat prompt template
+    const finalPrompt = ChatPromptTemplate.fromMessages([
+        ["system", "You are a helpful AI Assistant tasked with answering questions based on the provided document. Please read and understand the context carefully before generating your response and if question cannot be answered then ask user to provide more specifix context."],
+        ["human", prompt],  // Use the dynamic prompt input here
+    ]);
 
+    // Create an output parser
+    const outputParser = new StringOutputParser();
 
+    // Pipe the prompt through the model and output parser
+    const chain = finalPrompt.pipe(llm).pipe(outputParser);
+
+    // Stream the response
+    const response = await chain.stream({
+        input: prompt,  // Pass the prompt string here
+    });
+    return response;
+};

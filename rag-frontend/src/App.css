@@ -106,6 +106,13 @@
   background-color: #f9f9f9;
   border-radius: 5px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow-wrap: break-word; /* Ensures long words are wrapped */
+  white-space: pre-wrap;  /* Ensures line breaks are preserved */
+  word-break: break-word; /* Handles breaking long words */
+  line-height: 1.5;      /* Optional: Adjust line height for readability */
+  flex-grow: 0; /* Prevent growing, keeping it at a fixed size */
+  flex-shrink: 0; 
+  flex-basis: 55%;
 }
 
 /* Error Message */

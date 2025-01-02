@@ -47,7 +47,7 @@ const ssConfig = {
         },
     },
 };
-    
+/*    
 (async () => {
     // Load and split documents
     const splits = await loadAndSplitTheDocs("./data/sample.pdf");
@@ -83,7 +83,7 @@ await vectorStore.end();
 
 })();
 
-    
+*/    
 async function main() {
 	const data = [
         { id: 2, text: "Hello world" },

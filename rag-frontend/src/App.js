@@ -57,7 +57,7 @@ function App() {
   const handleQuestionChange = (event) => setQuestion(event.target.value);
   const handleModelChange = (event) => setModel(event.target.value);
 
-  const handleSubmit = async (event) => {
+  /*const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setResponse(null);
@@ -73,12 +73,61 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  };*/
+  
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setResponse(); // Clear previous responses
+
+    try {
+        const responseStream = await fetch("http://localhost:3005/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                question,
+                model,
+            }),
+        });
+
+        if (!responseStream.ok) {
+            throw new Error("Error in response stream");
+        }
+
+        const reader = responseStream.body.getReader();
+        const textDecoder = new TextDecoder(); // To decode stream chunks as text
+        let chunk = '';
+        let done = false;
+
+        while (!done) {
+            const { value, done: isDone } = await reader.read();
+            done = isDone;
+            chunk += textDecoder.decode(value, { stream: true });
+
+            // Directly append chunk to the response
+            if (chunk) {
+                setResponse(chunk); // Concatenate chunks
+            } else {
+                console.error("Received an invalid chunk:", chunk);
+            }
+        }
+    } catch (error) {
+        setResponse('Error occurred while processing the stream.');
+        console.error("Error streaming response:", error);
+    } finally {
+        setLoading(false);
+    }
+};
+
+
+
 
   const handleReset = () => {
     setQuestion("");
     setModel("llama-3.1-8b-instant");
-    setResponse(null);
+    setResponse();
   };
 
   if (!loggedIn) {
@@ -153,20 +202,19 @@ function App() {
             <BrainAnimation />
           </div>
         </form>
+        
         <div className="response-container">
-          {response && (
-            <div className="markdown-container">
-              {response.error ? (
-                <p className="error">{response.error}</p>
-              ) : (
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {response.data.content}
-                </ReactMarkdown>
-              )}
-            </div>
-          )}
-          {!response && (loading ? <RoboticBrain /> : <DefaultAIAnimation />)}
+        {!response && <DefaultAIAnimation />}
+        {response && typeof response === 'string' ? (
+          // Replace newline characters with <br /> tags for line breaks
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {response}
+                      </ReactMarkdown>
+        ) : (
+          <p>{JSON.stringify(response)}</p> // In case the response isn't a string
+        )}
         </div>
+        
       </div>
     </div>
   );
