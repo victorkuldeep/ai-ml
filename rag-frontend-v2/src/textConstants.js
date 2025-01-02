@@ -2,7 +2,7 @@
 
 export const Texts = {
     header: {
-        title: "Processing Files with Ease — Ask Me Anything..!! Lets get started by uploading file",
+        title: "Processing Files with Ease — Ask Me Anything..!! Lets get started by uploading file..!!",
         logoutButton: "Logout"
     },
     login: {

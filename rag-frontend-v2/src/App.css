@@ -45,16 +45,16 @@
   display: flex;
   flex-direction: column;
   /* Stack form fields vertically */
-  align-items: left;
   /* Center the form fields */
   justify-content: right;
   width: 100%;
-  max-width: 400px;
+  max-width: 500px;
   /* Set a max-width to prevent it from stretching too much */
-  padding: 20px;
+  padding: 40px;
   background-color: #f5f5f5;
   border-radius: 8px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  color: #2F4F4F;
 }
 
 /* Admin Access Request */
@@ -111,11 +111,13 @@
 
 .input-container label {
   font-weight: normal;
+  color: #2F4F4F;
 }
 
 textarea,
 select,
 input {
+  color: #2F4F4F;
   width: 100%;
   padding: 10px;
   margin-block-start: 10px;
@@ -128,6 +130,21 @@ input {
 /* Buttons */
 .submit-button {
   padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.login-button {
+  padding: 10px;
+  margin: 10px;
+  margin-block-start: 20px;
+  margin-block-end: 20px;
   background-color: #007bff;
   color: white;
   border: none;
@@ -192,6 +209,7 @@ input {
 
 /* File input styling */
 .file-upload-input {
+  color: #2F4F4F;
   padding: 10px;
   margin-bottom: 20px;
   background-color: #f0f0f0;

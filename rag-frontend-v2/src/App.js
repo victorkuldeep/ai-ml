@@ -166,6 +166,7 @@ function App() {
                 value={question}
                 onChange={handleQuestionChange}
                 placeholder={Texts.form.questionPlaceholder}
+                rows={5}
               />
             </div>
             <div className="input-container">

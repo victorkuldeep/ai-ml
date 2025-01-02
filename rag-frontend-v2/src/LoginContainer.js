@@ -69,7 +69,7 @@ const LoginContainer = ({ onLoginSuccess, setUsername, setPassword }) => {
                             placeholder="Enter password"
                         />
                     </div>
-                    <button type="submit" className="submit-button">Login</button>
+                    <button type="submit" className="login-button">Login</button>
                     {loginError && <p className="error">{loginError}</p>}
                 </form>
                 <p className="admin-access">

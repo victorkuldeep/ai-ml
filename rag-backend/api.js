@@ -1,13 +1,10 @@
 import express from "express";
 import multer from "multer";
 import cors from "cors";
-
 import { SingleStoreVectorStore } from "@langchain/community/vectorstores/singlestore";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { NomicEmbeddings } from "@langchain/nomic";
-import { OllamaEmbeddings } from "@langchain/ollama";
-
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { getUser } from "./db.js";  // Import the database functions
 import {
@@ -15,11 +12,12 @@ import {
   generatePrompt,
   vectorSearchSingleStore,
 } from "./rag.js";
-import {loadAndSplitTheDocs} from "./initializeVectorStore.js";
 import path from "path";  // Import path to resolve file paths
 import fs from "fs";
+
 const PORT = 3005;
 const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
@@ -49,13 +47,8 @@ app.post("/uploadfile", upload.single("file"), async (req, res) => {
       // Access the generated filename
       generatedFilename = file.filename;
       console.log("Generated filename:", generatedFilename);
-      const splits = await loadAndSplitTheDocs("./data/"+generatedFilename);
-      
-      // Initialize embeddings
-      const embeddings_local = new OllamaEmbeddings({
-          model: "nomic-embed-text:latest", // Replace with a valid model name
-      });
-
+      const splits = await loadAndSplitTheDocs("./data/" + generatedFilename);
+    
       // OPEN AI EMBEDDIGN MODEL - OPENAI API KEY IS REQUIRED
       const embeddings = new OpenAIEmbeddings({
           model: "text-embedding-3-small"
@@ -146,14 +139,11 @@ app.post("/chat", async (req, res) => {
     }
 });
 
-
 // Login Endpoint - Checking credentials against the SQLite DB
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
-
   try {
     const user = await getUser(username, password);
-
     if (user) {
       res.status(200).json({ success: true, message: "Login successful" });
     } else {
