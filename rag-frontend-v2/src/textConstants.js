@@ -14,6 +14,8 @@ export const Texts = {
         questionLabel: "Please Enter your question:",
         questionPlaceholder: "Ask a question...",
         modelLabel: "Select LLM Model:",
+        urlLabel: "Enter URLs (comma/semicolon separated)",
+        urlPlaceholder: "Enter URLs, one per line or separated by commas/semicolons.",
         models: [
             { value: "llama-3.1-8b-instant", label: "llama-3.1-8b-instant" },
             { value: "llama3-8b-8192", label: "llama3-8b-8192" },
@@ -21,14 +23,14 @@ export const Texts = {
         ]
     },
     button: {
-        submit: "Submit",
+        submit: "Ask",
         loading: "Loading...",
         reset: "Reset",
-        processFile: "Process File"
+        urls: "Process URLs"
     },
     fileUpload: {
         fileInputPlaceholder: "Choose a file to upload",
-        processButtonText: "Process File"
+        processButtonText: "Upload"
     },
     loadingMessage: {
         text: "Connecting to LLM..!! Please wait..."

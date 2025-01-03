@@ -12,9 +12,12 @@ import {
   generatePrompt,
   vectorSearchSingleStore,
   loadAndSplitTheDocs,
+  processMarkdownContent
 } from "./rag.js";
+import { fetchAndConvertToMarkdown } from './scraper.js';
 import path from "path";  // Import path to resolve file paths
 import fs from "fs";
+import bodyParser from 'body-parser';
 
 const PORT = 3005;
 const app = express();
@@ -22,6 +25,8 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+// Middleware to parse JSON requests
+app.use(bodyParser.json());
 
 // File upload configuration
 const upload = multer({
@@ -43,16 +48,16 @@ app.post("/uploadfile", upload.single("file"), async (req, res) => {
     const file = req.file;
     let generatedFilename;
     if (!file) {
-    return res.status(400).send("No file uploaded.");
-    }else{
+      return res.status(400).send("No file uploaded.");
+    } else {
       // Access the generated filename
       generatedFilename = file.filename;
       console.log("Generated filename:", generatedFilename);
       const splits = await loadAndSplitTheDocs("./data/" + generatedFilename);
-    
+
       // OPEN AI EMBEDDIGN MODEL - OPENAI API KEY IS REQUIRED
       const embeddings = new OpenAIEmbeddings({
-          model: "text-embedding-3-small"
+        model: "text-embedding-3-small"
       });
 
       /* NOMIC Embed queries */
@@ -60,41 +65,43 @@ app.post("/uploadfile", upload.single("file"), async (req, res) => {
 
       // SingleStore configuration
       const ssConfig = {
-          tableName: "DocumentVectorStore",
-          connectionOptions: {
-              host: process.env.SINGLESTORE_HOST,
-              port: Number(process.env.SINGLESTORE_PORT),
-              user: process.env.SINGLESTORE_USERNAME,
-              password: process.env.SINGLESTORE_PASSWORD,
-              database: process.env.SINGLESTORE_DATABASE,
-              ssl: {
-                  //rejectUnauthorized: true, // Set to false to bypass SSL verification for self-signed certs
-                  ca: fs.readFileSync('./singlestore_bundle.pem'),
-              },
+        tableName: "DocumentVectorStore",
+        connectionOptions: {
+          host: process.env.SINGLESTORE_HOST,
+          port: Number(process.env.SINGLESTORE_PORT),
+          user: process.env.SINGLESTORE_USERNAME,
+          password: process.env.SINGLESTORE_PASSWORD,
+          database: process.env.SINGLESTORE_DATABASE,
+          ssl: {
+            //rejectUnauthorized: true, // Set to false to bypass SSL verification for self-signed certs
+            ca: fs.readFileSync('./singlestore_bundle.pem'),
           },
+        },
       };
       console.log(`Number of splits: ${splits.length}`);
       // Prepare data for ChromaDB
       const embeddedDocs = await Promise.all(
-          splits.map(async (doc, index) => ({
+        splits.map(async (doc, index) => ({
           id: `doc-${index}`, // Unique ID for each document
           pageContent: doc.pageContent,
           metadata: doc.metadata,
-      })));
+        })));
+
+      /*
       const vectorStoreInit = new SingleStoreVectorStore(nomicEmbeddings, ssConfig);
       // Clear the table before adding new data
       try {
-          await vectorStoreInit.connectionPool.query(`TRUNCATE TABLE ${ssConfig.tableName}`);
-          console.log(`Table ${ssConfig.tableName} cleared successfully.`);
+        //await vectorStoreInit.connectionPool.query(`TRUNCATE TABLE ${ssConfig.tableName}`);
+        //console.log(`Table ${ssConfig.tableName} cleared successfully.`);
       } catch (error) {
-          console.error(`Failed to clear table ${ssConfig.tableName}:`, error);
-          throw error;
+        console.error(`Failed to clear table ${ssConfig.tableName}:`, error);
+        throw error;
       }
-      
+        */
       // Final Docs ready to go in DB
       const documents = embeddedDocs.map((doc) => ({
-          pageContent: doc.pageContent,
-          metadata: doc.metadata,
+        pageContent: doc.pageContent,
+        metadata: doc.metadata,
       }));
       const ids = embeddedDocs.map((doc) => doc.id);
       const vectorStore = await SingleStoreVectorStore.fromDocuments(
@@ -102,9 +109,8 @@ app.post("/uploadfile", upload.single("file"), async (req, res) => {
         nomicEmbeddings, // Embedding model -> Use any Embeddign model here OPEN AI , NOMIC LOCAL or NOMIC ATLAS
         ssConfig, // Database config
       );
-    // End the vector store connection
-    await vectorStore.end();
-          
+      // End the vector store connection
+      await vectorStore.end();
     }
     res.status(200).send("File uploaded and processed successfully: " + generatedFilename);
   } catch (error) {
@@ -113,31 +119,73 @@ app.post("/uploadfile", upload.single("file"), async (req, res) => {
   }
 });
 
-app.post("/chat", async (req, res) => {
-    const question = req.body.question;
-    const model = req.body.model;
+// POST endpoint for URL parsing
+app.post('/urlparser', async (req, res) => {
+  const { urls } = req.body;
 
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.setHeader("Transfer-Encoding", "chunked");
+  if (!urls || typeof urls !== 'string') {
+    return res.status(400).json({ error: 'A valid URLs string is required in the request body.' });
+  }
 
-    try {
-        const searches = await vectorSearchSingleStore(question);
-        const prompt = await generatePrompt(searches, question);
-        console.log(prompt);
-        const responseStream = await generateOutputStream(prompt, model);
-        for await (const chunk of responseStream) {
-            if (chunk && typeof chunk === "string") {
-                res.write(chunk);  // Write each chunk to the response
-            } else {
-                console.error("Non-string content received:", chunk);
-            }
+  // Split URLs by comma or semicolon and trim spaces
+  const urlArray = urls.split(/[,;]/).map((url) => url.trim()).filter(Boolean);
+
+  if (urlArray.length === 0) {
+    return res.status(400).json({ error: 'No valid URLs provided in the request body.' });
+  }
+
+  try {
+    const results = await Promise.all(
+      urlArray.map(async (url) => {
+        try {
+          const markdownContent = await fetchAndConvertToMarkdown(url);
+          return { url, markdown: markdownContent };
+        } catch (error) {
+          console.error(`Error processing URL ${url}:`, error.message);
+          return { url, error: 'Failed to process this URL.' };
         }
-    } catch (error) {
-        console.error("Error streaming response:", error);
-        res.write("Error occurred during streaming.");
-    } finally {
-        res.end();
+      })
+    );
+
+    await processMarkdownContent({ results }).catch(console.error);
+
+    return res.status(200).json({
+      message: 'Markdown content successfully generated for the provided URLs.',
+      results,
+    });
+  } catch (error) {
+    console.error('Error processing URLs:', error.message);
+    return res.status(500).json({
+      error: 'Failed to process the URLs. Please check the input or try again later.',
+    });
+  }
+});
+
+app.post("/chat", async (req, res) => {
+  const question = req.body.question;
+  const model = req.body.model;
+
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  res.setHeader("Transfer-Encoding", "chunked");
+
+  try {
+    const searches = await vectorSearchSingleStore(question);
+    const prompt = await generatePrompt(searches, question);
+    console.log(prompt);
+    const responseStream = await generateOutputStream(prompt, model);
+    for await (const chunk of responseStream) {
+      if (chunk && typeof chunk === "string") {
+        res.write(chunk);  // Write each chunk to the response
+      } else {
+        console.error("Non-string content received:", chunk);
+      }
     }
+  } catch (error) {
+    console.error("Error streaming response:", error);
+    res.write("Error occurred during streaming.");
+  } finally {
+    res.end();
+  }
 });
 
 // Login Endpoint - Checking credentials against the SQLite DB

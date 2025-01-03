@@ -15,12 +15,12 @@ const DefaultAIAnimation = () => {
 
   return (
     <div className="lottie-container">
-      <Lottie 
-        options={options} 
-        style={{ 
-          height: "calc(100vh - 100px)", 
-          width: "100vh" 
-        }} 
+      <Lottie
+        options={options}
+        style={{
+          height: "calc(100vh - 100px)",
+          width: "100vh"
+        }}
       />
     </div>
   );
@@ -36,7 +36,7 @@ const BrainAnimation = () => {
 
   return (
     <div className="lottie-brain-container">
-      <Lottie options={options} height="25%" width="25%" />
+      <Lottie options={options} height="16%" width="16%" />
     </div>
   );
 };

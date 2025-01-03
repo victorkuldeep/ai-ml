@@ -16,7 +16,9 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isUrlProcessing, setIsUrlProcessing] = useState(false);
   const [message, setMessage] = useState('Establishing connection with LLM...');
+  const [urls, setUrls] = useState("");
 
   useEffect(() => {
     if (loading) {
@@ -145,6 +147,56 @@ function App() {
     }
   };
 
+  const handleUrlsChange = (event) => setUrls(event.target.value);
+
+  const handleUrlsSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!urls.trim()) {
+      toast.error("Please enter valid URLs.");
+      return;
+    }
+
+    const urlArray = urls.split(/[\n,;]+/).map((url) => url.trim()).filter((url) => url); // Clean and split URLs
+    const successResults = [];
+    const errorResults = [];
+
+    try {
+      // Start processing
+      setIsUrlProcessing(true);
+      for (const url of urlArray) {
+        try {
+          await axios.post("http://localhost:3005/urlparser", {
+            urls: url, // Send one URL at a time
+          });
+          successResults.push(url);
+        } catch (error) {
+          console.error(`Error processing URL: ${url}`, error);
+          errorResults.push(url);
+        }
+      }
+
+      if (successResults.length > 0) {
+        toast.success(`${successResults.length} URL(s) processed successfully.`);
+      }
+
+      if (errorResults.length > 0) {
+        toast.error(`${errorResults.length} URL(s) failed to process.`);
+      }
+
+      setUrls(""); // Clear input after processing
+
+    } catch (error) {
+      console.error("Error processing URLs:", error);
+      toast.error("An unexpected error occurred.");
+    }
+    finally {
+      // Start processing
+      setIsUrlProcessing(false);
+    }
+  };
+
+
   if (!loggedIn) {
     return <LoginContainer onLoginSuccess={handleLoginSuccess} />;
   }
@@ -191,9 +243,31 @@ function App() {
           <div className="file-upload-container">
             <form onSubmit={handleFileSubmit} className="file-upload-form">
               <input type="file" onChange={handleFileChange} className="file-upload-input" />
-              <button type="submit" className="file-upload-button" disabled={isProcessing}>{isProcessing ? '' : Texts.fileUpload.processButtonText}</button>
+              <button type="submit" className="file-upload-button" disabled={isProcessing}>{isProcessing ? 'Uploading...' : Texts.fileUpload.processButtonText}</button>
             </form>
             <ToastContainer />
+          </div>
+
+          {/* URL Input Form */}
+
+          <div className="url-input-container">
+            <form onSubmit={handleUrlsSubmit} className="url-form-container">
+              <div className="input-container">
+                <label htmlFor="urls">{Texts.form.urlLabel}</label>
+                <textarea
+                  id="urls"
+                  value={urls}
+                  onChange={handleUrlsChange}
+                  placeholder={Texts.form.urlPlaceholder}
+                  rows={5}
+                />
+              </div>
+              <div className="button-container">
+                <button type="submit" className="url-submit-button" disabled={isUrlProcessing}>
+                  {isUrlProcessing ? 'Processing URLs...' : Texts.button.urls}
+                </button>
+              </div>
+            </form>
           </div>
 
           <div className="brain-animation-container">
